@@ -1,8 +1,11 @@
 import logging
-import pika
 import json
+import pika
 from alarmlibrary.alarm import Alarm
-from alarmlibrary.exceptions import ConnectionClosed, InvalidAlarm, AuthenticationError, AlarmManagerException
+from alarmlibrary.exceptions import (ConnectionClosed,
+                                     InvalidAlarm,
+                                     AuthenticationError,
+                                     AlarmManagerException)
 
 LOGGER = logging.getLogger(__name__)
 
