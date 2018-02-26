@@ -5,11 +5,11 @@ from enum import Enum
 
 
 class AlarmSeverity(Enum):
-    WARNING = 0
-    MINOR = 1
-    MAJOR = 2
-    CRITICAL = 3
-    CLEAR = 4
+    Warning = 0
+    Minor = 1
+    Major = 2
+    Critical = 3
+    Clear = 4
 
 class Alarm(object):
 
@@ -95,7 +95,7 @@ class Alarm(object):
         data['domain'] = self._domain
         data['primarySubject'] = self._primary_subject
         data['additionalData'] = self._additional_data
-        data['severity'] = self._severity.name.title() # Convert MINOR -> Minor
+        data['severity'] = self._severity.name
         data['eventTimestamp'] = self._timestamp
 
         return json.dumps(data)
