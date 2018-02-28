@@ -1,5 +1,5 @@
 import json
-import time
+from datetime import datetime
 from collections import OrderedDict
 from enum import Enum
 
@@ -12,14 +12,29 @@ class AlarmSeverity(Enum):
     Clear = 4
 
 class Alarm(object):
+    """
+    This class represents an alarm as expected by dojot/alarm-manager
+    """
 
-    def __init__(self, domain, namespace, severity, timestamp=int(time.time()), description=""):
+    def __init__(self, domain, namespace, severity, description=""):
+        """Constructs an dojot alarm
+
+        Note:
+            The alarm timestamp will be set up here
+
+        Args:
+            param1 (str): Application domain.
+            param2 (str): Alarm namespace.
+            param3 (AlarmSeverity): Severity.
+            param4 (str): Alarm description.
+            """
+
         if not isinstance(severity, AlarmSeverity):
             raise ValueError('Invalid severity value, it must be AlarmSeverity')
 
         self._domain = domain
         self._severity = severity
-        self._timestamp = int(timestamp)
+        self._timestamp = datetime.now().isoformat()
         self._namespace = namespace
         self._description = description
         self._primary_subject = dict()
@@ -31,19 +46,19 @@ class Alarm(object):
 
     @property
     def severity(self):
-        return self._domain
+        return self._severity
 
     @property
     def timestamp(self):
-        return self._domain
+        return self._timestamp
 
     @property
     def namespace(self):
-        return self._domain
+        return self._namespace
 
     @property
     def description(self):
-        return self._domain
+        return self._description
 
     @namespace.setter
     def namespace(self, value):
@@ -86,7 +101,7 @@ class Alarm(object):
                 "nports": "10"
             },
             "severity": "Critical",
-            "eventTimestamp": 1412381203989
+            "eventTimestamp": "2018-03-01T11:02:08.361333"
         }
         """
 
