@@ -13,13 +13,13 @@ class AlarmSeverity(Enum):
 
 class Alarm(object):
 
-    def __init__(self, domain, namespace, severity, timestamp=long(time.time()), description=""):
+    def __init__(self, domain, namespace, severity, timestamp=int(time.time()), description=""):
         if not isinstance(severity, AlarmSeverity):
             raise ValueError('Invalid severity value, it must be AlarmSeverity')
 
         self._domain = domain
         self._severity = severity
-        self._timestamp = long(timestamp)
+        self._timestamp = int(timestamp)
         self._namespace = namespace
         self._description = description
         self._primary_subject = dict()
