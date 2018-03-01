@@ -32,7 +32,7 @@ def main():
     client.open(args.host)
 
     alarm = Alarm(  domain="AuthenticationError", namespace="dojot.auth",
-                    severity=AlarmSeverity.Minor, timestamp=1,
+                    severity=AlarmSeverity.Minor,
                     description="description to be written")
     alarm.add_primary_subject("instance_id", "4")
     alarm.add_primary_subject("module_name", "My beautiful module")
