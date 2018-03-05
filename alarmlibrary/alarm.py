@@ -17,7 +17,7 @@ class Alarm(object):
     """
 
     def __init__(self, domain, namespace, severity,
-                 timestamp = datetime.now(), description=""):
+                 timestamp=datetime.now(), description=""):
         """Constructs an dojot alarm
 
         Note:
@@ -33,6 +33,9 @@ class Alarm(object):
 
         if not isinstance(severity, AlarmSeverity):
             raise ValueError('Invalid severity value, it must be AlarmSeverity')
+
+        if not isinstance(timestamp, datetime):
+            raise ValueError('Invalid timestamp value, it must be datetime')
 
         self._domain = domain
         self._severity = severity
