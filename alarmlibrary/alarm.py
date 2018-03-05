@@ -16,7 +16,8 @@ class Alarm(object):
     This class represents an alarm as expected by dojot/alarm-manager
     """
 
-    def __init__(self, domain, namespace, severity, description=""):
+    def __init__(self, domain, namespace, severity,
+                 timestamp=datetime.now(), description=""):
         """Constructs an dojot alarm
 
         Note:
@@ -26,15 +27,19 @@ class Alarm(object):
             param1 (str): Application domain.
             param2 (str): Alarm namespace.
             param3 (AlarmSeverity): Severity.
-            param4 (str): Alarm description.
+            param4 (datetime): timestamp.
+            param5 (str): Alarm description.
             """
 
         if not isinstance(severity, AlarmSeverity):
             raise ValueError('Invalid severity value, it must be AlarmSeverity')
 
+        if not isinstance(timestamp, datetime):
+            raise ValueError('Invalid timestamp value, it must be datetime')
+
         self._domain = domain
         self._severity = severity
-        self._timestamp = datetime.now().isoformat()
+        self._timestamp = timestamp.isoformat()
         self._namespace = namespace
         self._description = description
         self._primary_subject = dict()
