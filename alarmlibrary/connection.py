@@ -27,11 +27,21 @@ class RabbitMqClientConnection(object):
         self._exchange = exchange
         self._exchange_type = exchange_type
         self._default_routing_key = default_routing_key
+        self._host = None
+        self._port = None
+        self._user = None
+        self._password = None
         self._connection = None
         self._channel = None
 
     def open(self, host=DEFAULT['HOST'], port=DEFAULT['PORT'],
              user=DEFAULT['USER'], password=DEFAULT['PASSWORD']):
+        # keep for reopening the connection
+        self._host = host
+        self._port = port
+        self._user = user
+        self._password = password
+
         try:
             LOGGER.debug("Trying to connect to host=%s, port=%d, user=%s, password=%s",
                          host, port, user, password)
@@ -47,32 +57,52 @@ class RabbitMqClientConnection(object):
         except pika.exceptions.ConnectionClosed:
             raise ConnectionClosed("Could not connect to %s:%s", )
         except Exception as ex:
-            LOGGER.error(ex.message)
+            LOGGER.error("Connection to RabbitMQ server failed! %s", ex.message)
             raise AlarmManagerException(ex.message)
 
     def is_open(self):
-        return self._channel.is_open and self._connection.is_open
+        return (self._channel and self._connection and
+                self._channel.is_open and self._connection.is_open)
 
     def close(self):
-        if self._channel.is_open:
+        if self._channel and self._channel.is_open:
             self._channel.close()
-        if self._connection.is_open:
+        if self._connection and self._connection.is_open:
             self._connection.close()
 
     def send(self, alarm, routing_key=None):
-        if self._connection.is_open and self._channel.is_open:
-            if isinstance(alarm, Alarm):
-                if not routing_key:
-                    routing_key = self._default_routing_key
-                message = alarm.serialize()
-                parsed = json.loads(message)
-                LOGGER.debug("Sending : exchange=%s routingkey=%s\nalarm= %s",
-                             self._exchange, routing_key,
-                             json.dumps(parsed, indent=2))
-                self._channel.basic_publish(exchange=self._exchange,
-                                            routing_key=routing_key,
-                                            body=message)
-            else:
-                raise InvalidAlarm("Invalid alarm type, it must be Alarm")
-        else:
-            raise ConnectionClosed("Connection closed")
+        if not isinstance(alarm, Alarm):
+            raise InvalidAlarm("Invalid alarm type, it must be Alarm")
+
+        delivered = False
+        if self.is_open():
+            if not routing_key:
+                routing_key = self._default_routing_key
+
+            message = alarm.serialize()
+            parsed = json.loads(message)
+            LOGGER.debug("Sending : exchange=%s routingkey=%s\nalarm= %s",
+                         self._exchange, routing_key,
+                         json.dumps(parsed, indent=2))
+            try:
+                delivered = self._channel.basic_publish(exchange=self._exchange,
+                                                        routing_key=routing_key,
+                                                        body=message)
+            except pika.exceptions.ConnectionClosed:
+                LOGGER.error("Connection to RabbitMQ server has been closed/reset!")
+                delivered = False
+
+        if not delivered:
+            LOGGER.warning("Reconnecting to RabbitMQ server!")
+            self.close()
+            try:
+                self.open(self._host, self._port, self._user, self._password)
+                LOGGER.warning("Resending alarm!")
+                delivered = self._channel.basic_publish(exchange=self._exchange,
+                                                        routing_key=routing_key,
+                                                        body=message)
+            except Exception as ex:
+                LOGGER.error("Alarm couldn't be delivered! Try later!")
+                raise AlarmManagerException(ex.message)
+
+        return delivered
