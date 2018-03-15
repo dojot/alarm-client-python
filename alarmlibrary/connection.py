@@ -85,7 +85,8 @@ class RabbitMqClientConnection(object):
                          self._exchange, routing_key,
                          json.dumps(parsed, indent=2))
             try:
-                delivered = self._channel.basic_publish(exchange=self._exchange, routing_key=routing_key,
+                delivered = self._channel.basic_publish(exchange=self._exchange, 
+                                                        routing_key=routing_key,
                                                         body=message)
             except pika.exceptions.ConnectionClosed:
                 LOGGER.error("Connection to RabbitMQ server has been closed/reset!")
@@ -97,7 +98,8 @@ class RabbitMqClientConnection(object):
             try:
                 self.open(self._host, self._port, self._user, self._password)
                 LOGGER.warning("Resending alarm!")
-                delivered = self._channel.basic_publish(exchange=self._exchange, routing_key=routing_key,
+                delivered = self._channel.basic_publish(exchange=self._exchange, 
+                                                        routing_key=routing_key,
                                                         body=message)
             except Exception as ex:
                 LOGGER.error("Alarm couldn't be delivered! Try later!")
